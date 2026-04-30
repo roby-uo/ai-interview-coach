@@ -1,0 +1,189 @@
+/* 面试外脑 V2.0 - 深邃海军蓝主题 */
+/* 配色方案：专业、冷静、高智商 */
+
+:root {
+    --primary-color: #64b5f6;
+    --background-color: #0f172a;
+    --surface-color: #1e293b;
+    --surface-alt-color: #334155;
+    --text-color: #e2e8f0;
+    --text-secondary-color: #94a3b8;
+}
+
+body {
+    background-color: var(--background-color) !important;
+    color: var(--text-color) !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+.main-container {
+    background-color: var(--background-color) !important;
+}
+
+.chat-container {
+    background-color: var(--background-color) !important;
+}
+
+.message {
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+    border-radius: 12px !important;
+}
+
+.message.user {
+    background-color: var(--surface-alt-color) !important;
+}
+
+.message.assistant {
+    background-color: var(--surface-color) !important;
+}
+
+.input-container {
+    background-color: var(--surface-alt-color) !important;
+    border: 1px solid var(--primary-color) !important;
+    border-radius: 8px !important;
+}
+
+input, textarea {
+    background-color: var(--surface-alt-color) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--primary-color) !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-secondary-color) !important;
+}
+
+button {
+    background-color: var(--primary-color) !important;
+    color: var(--background-color) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+}
+
+button:hover {
+    opacity: 0.9 !important;
+}
+
+a {
+    color: var(--primary-color) !important;
+}
+
+a:hover {
+    text-decoration: underline !important;
+}
+
+.sidebar {
+    background-color: var(--surface-color) !important;
+}
+
+.sidebar-title {
+    color: var(--text-color) !important;
+}
+
+.sidebar-item {
+    color: var(--text-secondary-color) !important;
+}
+
+.sidebar-item:hover {
+    background-color: var(--surface-alt-color) !important;
+    color: var(--text-color) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color) !important;
+}
+
+p {
+    color: var(--text-color) !important;
+}
+
+.secondary-text {
+    color: var(--text-secondary-color) !important;
+}
+
+code {
+    background-color: var(--surface-alt-color) !important;
+    color: var(--primary-color) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+}
+
+pre {
+    background-color: var(--surface-color) !important;
+    border: 1px solid var(--surface-alt-color) !important;
+    border-radius: 8px !important;
+}
+
+pre code {
+    background-color: transparent !important;
+}
+
+.loading-dots {
+    color: var(--primary-color) !important;
+}
+
+::-webkit-scrollbar {
+    width: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-color) !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--surface-alt-color) !important;
+    border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color) !important;
+}
+
+/* ============================================================
+   悬浮按钮：结束训练并生成报告
+   只定位最后一个消息中的 Action 按钮
+   ============================================================ */
+
+/* 最后一个消息中的按钮固定到右下角 */
+.message:last-of-type .flex button[type="button"],
+.message:last-child .flex button[type="button"] {
+    position: fixed !important;
+    bottom: 100px !important;
+    right: 24px !important;
+    z-index: 9999 !important;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%) !important;
+    color: #0f172a !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 14px 28px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3), 0 0 0 1px rgba(74, 222, 128, 0.2) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: 0.5px !important;
+}
+
+.message:last-of-type .flex button[type="button"]:hover,
+.message:last-child .flex button[type="button"]:hover {
+    transform: translateY(-3px) scale(1.03) !important;
+    box-shadow: 0 8px 30px rgba(74, 222, 128, 0.45), 0 0 0 1px rgba(74, 222, 128, 0.3) !important;
+}
+
+.message:last-of-type .flex button[type="button"]:active,
+.message:last-child .flex button[type="button"]:active {
+    transform: translateY(-1px) scale(0.98) !important;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .message:last-of-type .flex button[type="button"],
+    .message:last-child .flex button[type="button"] {
+        bottom: 80px !important;
+        right: 16px !important;
+        padding: 12px 20px !important;
+        font-size: 14px !important;
+    }
+}
