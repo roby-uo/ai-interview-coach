@@ -1,189 +1,563 @@
-/* 面试外脑 V2.0 - 深邃海军蓝主题 */
-/* 配色方案：专业、冷静、高智商 */
+/*
+ * AI 面试教练 — Chainlit UI 定制样式
+ * 使用方法：替换 public/custom.css 的全部内容，重启 Chainlit 服务
+ * 兼容版本：Chainlit >= 1.0
+ */
 
+/* ═══════════════════════════════════════
+   §1  全局主题变量覆盖
+   ═══════════════════════════════════════ */
 :root {
-    --primary-color: #64b5f6;
-    --background-color: #0f172a;
-    --surface-color: #1e293b;
-    --surface-alt-color: #334155;
-    --text-color: #e2e8f0;
-    --text-secondary-color: #94a3b8;
+  /* 基底色 */
+  --cl-color-bg: #08080e;
+  --cl-color-surface: #0f0f18;
+  --cl-color-surface-hover: #161622;
+
+  /* 边框 */
+  --cl-color-border: rgba(255, 255, 255, 0.06);
+  --cl-color-border-hover: rgba(255, 255, 255, 0.12);
+
+  /* 文字 */
+  --cl-color-text: #d4d4dc;
+  --cl-color-text-secondary: #6e6e84;
+  --cl-color-text-tertiary: #44445a;
+
+  /* 主强调色 — 琥珀金 */
+  --cl-color-primary: #d4a017;
+  --cl-color-primary-hover: #e8b52e;
+  --cl-color-primary-soft: rgba(212, 160, 23, 0.1);
+
+  /* 功能色 */
+  --cl-color-success: #22c55e;
+  --cl-color-danger: #ef4444;
+  --cl-color-warning: #eab308;
+
+  /* 圆角 */
+  --cl-radius-sm: 8px;
+  --cl-radius: 12px;
+  --cl-radius-lg: 16px;
+  --cl-radius-xl: 20px;
+
+  /* 字体 */
+  --cl-font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  --cl-font-family-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* 阴影 */
+  --cl-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4);
+  --cl-shadow-lg: 0 16px 48px -12px rgba(0, 0, 0, 0.5);
 }
 
-body {
-    background-color: var(--background-color) !important;
-    color: var(--text-color) !important;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+/* ═══════════════════════════════════════
+   §2  基础重置
+   ═══════════════════════════════════════ */
+.cl-root {
+  background: var(--cl-color-bg) !important;
+  color: var(--cl-color-text) !important;
 }
 
-.main-container {
-    background-color: var(--background-color) !important;
+/* 自定义滚动条 */
+.cl-root *::-webkit-scrollbar { width: 5px; }
+.cl-root *::-webkit-scrollbar-track { background: transparent; }
+.cl-root *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+.cl-root *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.chat-container {
-    background-color: var(--background-color) !important;
+/* 全局选中色 */
+.cl-root ::selection {
+  background: rgba(212, 160, 23, 0.25);
+  color: #fff;
 }
 
-.message {
-    background-color: var(--surface-color) !important;
-    color: var(--text-color) !important;
-    border-radius: 12px !important;
+/* ═══════════════════════════════════════
+   §3  侧边栏
+   ═══════════════════════════════════════ */
+.cl-sidebar {
+  background: var(--cl-color-surface) !important;
+  border-right: 1px solid var(--cl-color-border) !important;
+  backdrop-filter: blur(20px);
 }
 
-.message.user {
-    background-color: var(--surface-alt-color) !important;
+.cl-sidebar .cl-sidebar-header {
+  border-bottom: 1px solid var(--cl-color-border) !important;
+  padding: 16px 18px !important;
 }
 
-.message.assistant {
-    background-color: var(--surface-color) !important;
+.cl-sidebar .cl-sidebar-item {
+  border-radius: var(--cl-radius-sm) !important;
+  margin: 2px 8px !important;
+  padding: 10px 14px !important;
+  transition: all 0.2s ease !important;
+  color: var(--cl-color-text-secondary) !important;
 }
 
-.input-container {
-    background-color: var(--surface-alt-color) !important;
-    border: 1px solid var(--primary-color) !important;
-    border-radius: 8px !important;
+.cl-sidebar .cl-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--cl-color-text) !important;
 }
 
-input, textarea {
-    background-color: var(--surface-alt-color) !important;
-    color: var(--text-color) !important;
-    border: 1px solid var(--primary-color) !important;
+.cl-sidebar .cl-sidebar-item.active {
+  background: var(--cl-color-primary-soft) !important;
+  color: var(--cl-color-primary) !important;
+  border: 1px solid rgba(212, 160, 23, 0.15) !important;
 }
 
-input::placeholder, textarea::placeholder {
-    color: var(--text-secondary-color) !important;
+/* ═══════════════════════════════════════
+   §4  顶部导航栏
+   ═══════════════════════════════════════ */
+.cl-header {
+  background: rgba(8, 8, 14, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid var(--cl-color-border) !important;
 }
 
-button {
-    background-color: var(--primary-color) !important;
-    color: var(--background-color) !important;
-    border: none !important;
-    border-radius: 6px !important;
-    font-weight: 600 !important;
+/* ═══════════════════════════════════════
+   §5  消息气泡 — 核心
+   ═══════════════════════════════════════ */
+
+/* AI 消息 */
+.assistant-message .message-content {
+  background: #111119 !important;
+  border: 1px solid var(--cl-color-border) !important;
+  border-left: 3px solid var(--cl-color-primary) !important;
+  border-radius: 4px var(--cl-radius) var(--cl-radius) 4px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 2px 12px -4px rgba(0, 0, 0, 0.3) !important;
 }
 
-button:hover {
-    opacity: 0.9 !important;
+/* 用户消息 */
+.user-message .message-content {
+  background: #181830 !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: var(--cl-radius) 4px 4px var(--cl-radius) !important;
+  padding: 14px 18px !important;
 }
 
-a {
-    color: var(--primary-color) !important;
+/* ═══════════════════════════════════════
+   §6  Markdown 内容排版
+   ═══════════════════════════════════════ */
+.message-content h1 {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #f0f0f4 !important;
+  margin-bottom: 12px !important;
+  letter-spacing: -0.02em;
 }
 
-a:hover {
-    text-decoration: underline !important;
+.message-content h2 {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: var(--cl-color-primary-hover) !important;
+  margin-bottom: 10px !important;
+  padding-bottom: 6px !important;
+  border-bottom: 1px solid var(--cl-color-border) !important;
 }
 
-.sidebar {
-    background-color: var(--surface-color) !important;
+.message-content h3 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #e0e0e8 !important;
+  margin-bottom: 8px !important;
 }
 
-.sidebar-title {
-    color: var(--text-color) !important;
+.message-content p {
+  color: #b0b0c0 !important;
+  line-height: 1.8 !important;
+  margin-bottom: 8px !important;
 }
 
-.sidebar-item {
-    color: var(--text-secondary-color) !important;
+.message-content strong {
+  color: #e8e8f0 !important;
+  font-weight: 600 !important;
 }
 
-.sidebar-item:hover {
-    background-color: var(--surface-alt-color) !important;
-    color: var(--text-color) !important;
+.message-content ul,
+.message-content ol {
+  padding-left: 20px !important;
+  margin: 8px 0 12px !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    color: var(--text-color) !important;
+.message-content li {
+  color: #a0a0b4 !important;
+  line-height: 1.8 !important;
+  margin-bottom: 4px !important;
 }
 
-p {
-    color: var(--text-color) !important;
+.message-content li::marker {
+  color: var(--cl-color-primary) !important;
 }
 
-.secondary-text {
-    color: var(--text-secondary-color) !important;
+/* 引用块 — 教练公式/锦囊专用样式 */
+.message-content blockquote {
+  border-left: 3px solid var(--cl-color-primary) !important;
+  background: rgba(212, 160, 23, 0.04) !important;
+  border-radius: 0 var(--cl-radius-sm) var(--cl-radius-sm) 0 !important;
+  padding: 12px 16px !important;
+  margin: 12px 0 !important;
+  color: #9898ac !important;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
 }
 
-code {
-    background-color: var(--surface-alt-color) !important;
-    color: var(--primary-color) !important;
-    padding: 2px 6px !important;
-    border-radius: 4px !important;
+.message-content blockquote strong {
+  color: var(--cl-color-primary-hover) !important;
 }
 
-pre {
-    background-color: var(--surface-color) !important;
-    border: 1px solid var(--surface-alt-color) !important;
-    border-radius: 8px !important;
+/* 分割线 */
+.message-content hr {
+  border: none !important;
+  border-top: 1px solid var(--cl-color-border) !important;
+  margin: 14px 0 !important;
 }
 
-pre code {
-    background-color: transparent !important;
+/* 行内代码 */
+.message-content code {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--cl-color-primary-hover) !important;
+  padding: 2px 7px !important;
+  border-radius: 5px !important;
+  font-size: 0.88em !important;
+  font-family: var(--cl-font-family-mono) !important;
 }
 
-.loading-dots {
-    color: var(--primary-color) !important;
+/* 代码块 */
+.message-content pre {
+  background: #0a0a12 !important;
+  border: 1px solid var(--cl-color-border) !important;
+  border-radius: var(--cl-radius-sm) !important;
+  padding: 16px !important;
+  overflow-x: auto !important;
 }
 
-::-webkit-scrollbar {
-    width: 8px !important;
+.message-content pre code {
+  background: none !important;
+  padding: 0 !important;
+  color: #a0a0bc !important;
 }
 
-::-webkit-scrollbar-track {
-    background: var(--surface-color) !important;
+/* 表格 */
+.message-content table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 12px 0 !important;
 }
 
-::-webkit-scrollbar-thumb {
-    background: var(--surface-alt-color) !important;
-    border-radius: 4px !important;
+.message-content th {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #d0d0dc !important;
+  font-weight: 600 !important;
+  padding: 10px 14px !important;
+  border: 1px solid var(--cl-color-border) !important;
+  text-align: left !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color) !important;
+.message-content td {
+  padding: 8px 14px !important;
+  border: 1px solid var(--cl-color-border) !important;
+  color: #a0a0b4 !important;
 }
 
-/* ============================================================
-   悬浮按钮：结束训练并生成报告
-   只定位最后一个消息中的 Action 按钮
-   ============================================================ */
-
-/* 最后一个消息中的按钮固定到右下角 */
-.message:last-of-type .flex button[type="button"],
-.message:last-child .flex button[type="button"] {
-    position: fixed !important;
-    bottom: 100px !important;
-    right: 24px !important;
-    z-index: 9999 !important;
-    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%) !important;
-    color: #0f172a !important;
-    border: none !important;
-    border-radius: 50px !important;
-    padding: 14px 28px !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3), 0 0 0 1px rgba(74, 222, 128, 0.2) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    letter-spacing: 0.5px !important;
+/* ═══════════════════════════════════════
+   §7  Action 按钮
+   ═══════════════════════════════════════ */
+.cl-action,
+.cl-actions button {
+  border-radius: var(--cl-radius-sm) !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  padding: 9px 18px !important;
+  transition: all 0.25s ease !important;
+  border: none !important;
+  cursor: pointer !important;
 }
 
-.message:last-of-type .flex button[type="button"]:hover,
-.message:last-child .flex button[type="button"]:hover {
-    transform: translateY(-3px) scale(1.03) !important;
-    box-shadow: 0 8px 30px rgba(74, 222, 128, 0.45), 0 0 0 1px rgba(74, 222, 128, 0.3) !important;
+/* 主按钮 — 渐变金色 */
+.cl-actions button:first-child,
+.cl-action:first-child {
+  background: linear-gradient(135deg, #d4a017, #b8860b) !important;
+  color: #000 !important;
+  box-shadow: 0 2px 12px rgba(212, 160, 23, 0.15) !important;
 }
 
-.message:last-of-type .flex button[type="button"]:active,
-.message:last-child .flex button[type="button"]:active {
-    transform: translateY(-1px) scale(0.98) !important;
+.cl-actions button:first-child:hover,
+.cl-action:first-child:hover {
+  box-shadow: 0 6px 24px rgba(212, 160, 23, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 
-/* 移动端适配 */
+/* 次按钮 — 玻璃态 */
+.cl-actions button:nth-child(n+2),
+.cl-action:nth-child(n+2) {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--cl-color-text) !important;
+  border: 1px solid var(--cl-color-border) !important;
+}
+
+.cl-actions button:nth-child(n+2):hover,
+.cl-action:nth-child(n+2):hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--cl-color-border-hover) !important;
+}
+
+/* ═══════════════════════════════════════
+   §8  输入区域
+   ═══════════════════════════════════════ */
+.cl-input-area {
+  background: var(--cl-color-surface) !important;
+  border-top: 1px solid var(--cl-color-border) !important;
+  padding: 16px 20px !important;
+}
+
+.cl-input-area textarea,
+.cl-input-area input {
+  background: var(--cl-color-bg) !important;
+  border: 1px solid var(--cl-color-border) !important;
+  border-radius: var(--cl-radius) !important;
+  color: var(--cl-color-text) !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  transition: border-color 0.2s !important;
+}
+
+.cl-input-area textarea:focus,
+.cl-input-area input:focus {
+  border-color: rgba(212, 160, 23, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.08) !important;
+  outline: none !important;
+}
+
+.cl-input-area textarea::placeholder,
+.cl-input-area input::placeholder {
+  color: var(--cl-color-text-tertiary) !important;
+}
+
+/* 发送按钮 */
+.cl-input-area button[aria-label="Send"],
+.cl-input-area .send-button {
+  background: linear-gradient(135deg, #d4a017, #b8860b) !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: var(--cl-radius-sm) !important;
+  width: 40px !important;
+  height: 40px !important;
+  transition: all 0.2s !important;
+}
+
+.cl-input-area button[aria-label="Send"]:hover,
+.cl-input-area .send-button:hover {
+  box-shadow: 0 4px 20px rgba(212, 160, 23, 0.3) !important;
+  transform: scale(1.05) !important;
+}
+
+/* 附件按钮 */
+.cl-input-area button[aria-label="Attach"],
+.cl-input-area .attach-button {
+  color: var(--cl-color-text-secondary) !important;
+  transition: color 0.2s !important;
+}
+
+.cl-input-area button[aria-label="Attach"]:hover,
+.cl-input-area .attach-button:hover {
+  color: var(--cl-color-primary) !important;
+}
+
+/* ═══════════════════════════════════════
+   §9  加载/打字指示器
+   ═══════════════════════════════════════ */
+/* Chainlit 默认的 thinking/spinner 元素 */
+.cl-thinking,
+.thinking-indicator,
+[data-testid="thinking"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 10px 0 !important;
+}
+
+.cl-thinking .dot,
+.thinking-indicator .dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: var(--cl-color-primary) !important;
+  animation: cl-bounce 1.4s ease-in-out infinite !important;
+}
+
+.cl-thinking .dot:nth-child(2),
+.thinking-indicator .dot:nth-child(2) {
+  animation-delay: 0.2s !important;
+}
+
+.cl-thinking .dot:nth-child(3),
+.thinking-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s !important;
+}
+
+@keyframes cl-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+/* 流式输出时的光标 */
+.cl-streaming-cursor::after {
+  content: "▍";
+  color: var(--cl-color-primary);
+  animation: cl-cursor-blink 1s step-end infinite;
+}
+
+@keyframes cl-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════
+   §10  消息中的标签/徽章美化
+   ═══════════════════════════════════════ */
+
+/* 判卷分数高亮 */
+.message-content p:has(> strong:first-child) {
+  /* 通过内容特征匹配，让关键行更醒目 */
+}
+
+/* ═══════════════════════════════════════
+   §11  聊天区域背景
+   ═══════════════════════════════════════ */
+.cl-chat {
+  background: var(--cl-color-bg) !important;
+}
+
+.cl-messages {
+  padding: 24px 20px !important;
+}
+
+/* 消息之间的间距 */
+.cl-messages > * + * {
+  margin-top: 20px !important;
+}
+
+/* ═══════════════════════════════════════
+   §12  文件上传区域
+   ═══════════════════════════════════════ */
+.cl-file-dropzone,
+.dropzone {
+  border: 2px dashed var(--cl-color-border) !important;
+  border-radius: var(--cl-radius-lg) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+  transition: all 0.25s !important;
+}
+
+.cl-file-dropzone:hover,
+.dropzone:hover,
+.cl-file-dropzone.drag-over,
+.dropzone.drag-over {
+  border-color: var(--cl-color-primary) !important;
+  background: var(--cl-color-primary-soft) !important;
+}
+
+/* ═══════════════════════════════════════
+   §13  头像/身份指示
+   ═══════════════════════════════════════ */
+.cl-avatar,
+.avatar {
+  border-radius: 10px !important;
+  border: 2px solid var(--cl-color-border) !important;
+}
+
+/* ═══════════════════════════════════════
+   §14  Toast/通知
+   ═══════════════════════════════════════ */
+.cl-toast {
+  background: var(--cl-color-surface) !important;
+  border: 1px solid var(--cl-color-border) !important;
+  border-radius: var(--cl-radius) !important;
+  color: var(--cl-color-text) !important;
+  box-shadow: var(--cl-shadow-lg) !important;
+}
+
+/* ═══════════════════════════════════════
+   §15  响应式适配
+   ═══════════════════════════════════════ */
 @media (max-width: 768px) {
-    .message:last-of-type .flex button[type="button"],
-    .message:last-child .flex button[type="button"] {
-        bottom: 80px !important;
-        right: 16px !important;
-        padding: 12px 20px !important;
-        font-size: 14px !important;
-    }
+  .cl-messages {
+    padding: 16px 12px !important;
+  }
+
+  .assistant-message .message-content,
+  .user-message .message-content {
+    padding: 12px 14px !important;
+  }
+
+  .message-content h1 {
+    font-size: 18px !important;
+  }
+
+  .message-content h2 {
+    font-size: 15px !important;
+  }
+
+  .cl-actions button,
+  .cl-action {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ═══════════════════════════════════════
+   §16  微交互增强
+   ═══════════════════════════════════════ */
+
+/* 消息出现动画 */
+@keyframes cl-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cl-messages > * {
+  animation: cl-msg-in 0.35s ease-out !important;
+}
+
+/* 按钮点击反馈 */
+.cl-actions button:active,
+.cl-action:active {
+  transform: scale(0.97) !important;
+}
+
+/* ═══════════════════════════════════════
+   §17  欢迎消息特殊处理
+   ═══════════════════════════════════════ */
+/* 首条消息（欢迎消息）增大视觉权重 */
+.cl-messages > *:first-child .message-content {
+  background: linear-gradient(
+    135deg,
+    #111119 0%,
+    rgba(212, 160, 23, 0.03) 100%
+  ) !important;
+  border-left-width: 3px !important;
+}
+
+/* ═══════════════════════════════════════
+   §18  减少动画偏好适配
+   ═══════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
