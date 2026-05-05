@@ -1,6 +1,6 @@
 # 面试教练项目文档
 
-> 生成时间: 2026-04-30 01:43:21
+> 生成时间: 2026-05-05 13:39:13
 > 项目路径: `C:\Users\20647\Desktop\Agent项目管理\私人专属面试顾问\interview_coach`
 
 ---
@@ -94,7 +94,8 @@ interview_coach/
 ├── generate_project_doc.py
 ├── pyproject.toml
 ├── start.py
-└── start.sh
+├── start.sh
+└── 启动服务.bat
 ```
 
 ### 架构说明
@@ -140,8 +141,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     OPENAI_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
-    ROUTER_MODEL_NAME: str = "qwen3.5-plus-2026-04-20"
-    EXTRACTOR_MODEL_NAME: str = "qwen3.5-flash"
+    ROUTER_MODEL_NAME: str = "qwen3.5-plus-2026-02-15"
+    EXTRACTOR_MODEL_NAME: str = "qwen3.5-27b"
     EMBEDDING_MODEL_NAME: str = "text-embedding-v4"
 
     FAISS_TOP_K: int = 3
@@ -431,7 +432,10 @@ async def start():
 
 > 💡 **Tips**: 所有问题均针对你的弱点定制，模拟大厂面试官的刁钻提问。卡住时尽管求助，我会给你满分公式化提示，带你一步步拆解思路。
 
-*来头脑风暴吧🧠，你准备好接受挑战了吗？* 💪"""
+*可以选择快速体验模式👇，系统已准备简历和JD*
+*来头脑风暴吧🧠，你准备好接受挑战了吗？* 💪
+
+"""
 
     await cl.Message(
         content=welcome_content,
@@ -3792,11 +3796,35 @@ def is_port_available(port: int) -> bool:
         except OSError:
             return False
 
-def find_available_port(start_port: int = 8000, max_attempts: int = 10) -> int:
-    for port in range(start_port, start_port + max_attempts):
-        if is_port_available(port):
-            return port
-    return start_port + max_attempts
+def kill_port_process(port: int) -> bool:
+    """终止占用指定端口的进程（仅 Windows）"""
+    if sys.platform != "win32":
+        return False
+    
+    try:
+        result = subprocess.run(
+            f'netstat -ano | findstr ":{port}" | findstr "LISTENING"',
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        
+        if result.stdout.strip():
+            lines = result.stdout.strip().split('\n')
+            pids = set()
+            for line in lines:
+                parts = line.split()
+                if len(parts) >= 5:
+                    pids.add(parts[-1])
+            
+            for pid in pids:
+                if pid.isdigit():
+                    subprocess.run(f'taskkill /F /PID {pid}', shell=True, capture_output=True)
+                    print(f"[清理] 已终止占用端口 {port} 的进程 (PID: {pid})")
+            return True
+    except Exception:
+        pass
+    return False
 
 def main():
     script_dir = Path(__file__).parent.resolve()
@@ -3820,9 +3848,13 @@ def main():
         print("或者创建 .env 文件配置 OPENAI_API_KEY")
         print()
     
-    port = find_available_port(8000)
-    if port != 8000:
-        print(f"[提示] 端口 8000 已被占用，使用端口 {port}")
+    port = 8000
+    
+    if not is_port_available(port):
+        print(f"[提示] 端口 {port} 已被占用，正在清理...")
+        kill_port_process(port)
+        import time
+        time.sleep(1)
     
     print(f"正在启动服务... (端口: {port})")
     print()
@@ -3853,8 +3885,8 @@ if __name__ == "__main__":
 ## 统计信息
 
 - **Python 文件数量**: 42
-- **总代码行数**: 3,499
-- **总文件大小**: 134.2 KB
+- **总代码行数**: 3,530
+- **总文件大小**: 135.1 KB
 
 ---
 
