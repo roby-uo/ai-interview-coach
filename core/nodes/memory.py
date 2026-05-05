@@ -26,7 +26,7 @@ async def memory_node(state: InterviewState) -> Dict[str, Any]:
         logger.info("🧠 [记忆节点] 无新消息，使用缓存摘要")
         return {"short_summary": last_summary}
 
-    llm = llm_factory.get_extractor_llm()
+    llm = llm_factory.get_fast_llm()
 
     system_prompt = """你是一个对话结构化提取器。读取最近5轮对话，提取为JSON列表。
 

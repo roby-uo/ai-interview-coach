@@ -53,7 +53,7 @@ class Gatekeeper:
 
     def _ensure_initialized(self):
         if self._chain is None:
-            llm = llm_factory.get_extractor_llm()
+            llm = llm_factory.get_fast_llm()
             self._llm = llm
 
     async def aparse(self, raw_input: str) -> GatekeeperResult:

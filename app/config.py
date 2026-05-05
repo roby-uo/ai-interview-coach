@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     OPENAI_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
     ROUTER_MODEL_NAME: str = "deepseek-v3"
-    EXTRACTOR_MODEL_NAME: str = "qwen-turbo"
+    FAST_MODEL_NAME: str = "qwen-turbo"
     EMBEDDING_MODEL_NAME: str = "text-embedding-v4"
 
     FAISS_TOP_K: int = 3

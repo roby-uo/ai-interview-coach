@@ -55,6 +55,6 @@ REDIRECTION_ROLE_PROMPT = """你是一个高情商的面试控制大师。你没
 async def redirection_node(state: InterviewState) -> Dict[str, Any]:
     task_prompt = state["decision"]["task_prompt"]
     weakness_prefix = state.get("weakness_prefix", "")
-    response = await _execute_skill_with_tools(REDIRECTION_ROLE_PROMPT, task_prompt, weakness_prefix)
+    response = await _execute_skill_with_tools(REDIRECTION_ROLE_PROMPT, task_prompt, weakness_prefix, use_fast_model=True)
     logger.info(f"🔀 [重定向节点] 执行完毕")
     return {"response": response}

@@ -15,9 +15,13 @@ async def _execute_skill_with_tools(
     role_prompt: str,
     task_prompt: str,
     weakness_prefix: str = "",
-    bind_tools: List = None
+    bind_tools: List = None,
+    use_fast_model: bool = False
 ) -> str:
-    llm_instance = llm_factory.get_llm(settings.ROUTER_MODEL_NAME, temperature=0.3)
+    if use_fast_model:
+        llm_instance = llm_factory.get_fast_llm()
+    else:
+        llm_instance = llm_factory.get_llm(settings.ROUTER_MODEL_NAME, temperature=0.3)
 
     llm = llm_instance.bind_tools(bind_tools) if bind_tools else llm_instance
 

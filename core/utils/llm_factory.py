@@ -37,15 +37,23 @@ class LLMFactory:
     
     @classmethod
     def get_router_llm(cls) -> BaseChatModel:
+        """路由大脑：温度低，保证结构化输出稳定"""
         return cls.get_llm(settings.ROUTER_MODEL_NAME, temperature=0.1)
     
     @classmethod
-    def get_extractor_llm(cls) -> BaseChatModel:
-        return cls.get_llm(settings.EXTRACTOR_MODEL_NAME, temperature=0.0)
+    def get_fast_llm(cls) -> BaseChatModel:
+        """快速手脚：温度适中，追求速度"""
+        return cls.get_llm(settings.FAST_MODEL_NAME, temperature=0.5)
+    
+    @classmethod
+    def get_router_llm_creative(cls) -> BaseChatModel:
+        """报告/开场白：温度稍高，带点人情味"""
+        return cls.get_llm(settings.ROUTER_MODEL_NAME, temperature=0.7)
     
     @classmethod
     def get_creative_llm(cls) -> BaseChatModel:
-        return cls.get_llm(settings.ROUTER_MODEL_NAME, temperature=0.7)
+        """兼容旧接口：等同于 get_router_llm_creative"""
+        return cls.get_router_llm_creative()
     
     @classmethod
     def clear_cache(cls):
