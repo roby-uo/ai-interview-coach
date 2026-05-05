@@ -18,11 +18,35 @@ def is_port_available(port: int) -> bool:
         except OSError:
             return False
 
-def find_available_port(start_port: int = 8000, max_attempts: int = 10) -> int:
-    for port in range(start_port, start_port + max_attempts):
-        if is_port_available(port):
-            return port
-    return start_port + max_attempts
+def kill_port_process(port: int) -> bool:
+    """终止占用指定端口的进程（仅 Windows）"""
+    if sys.platform != "win32":
+        return False
+    
+    try:
+        result = subprocess.run(
+            f'netstat -ano | findstr ":{port}" | findstr "LISTENING"',
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        
+        if result.stdout.strip():
+            lines = result.stdout.strip().split('\n')
+            pids = set()
+            for line in lines:
+                parts = line.split()
+                if len(parts) >= 5:
+                    pids.add(parts[-1])
+            
+            for pid in pids:
+                if pid.isdigit():
+                    subprocess.run(f'taskkill /F /PID {pid}', shell=True, capture_output=True)
+                    print(f"[清理] 已终止占用端口 {port} 的进程 (PID: {pid})")
+            return True
+    except Exception:
+        pass
+    return False
 
 def main():
     script_dir = Path(__file__).parent.resolve()
@@ -46,9 +70,13 @@ def main():
         print("或者创建 .env 文件配置 OPENAI_API_KEY")
         print()
     
-    port = find_available_port(8000)
-    if port != 8000:
-        print(f"[提示] 端口 8000 已被占用，使用端口 {port}")
+    port = 8000
+    
+    if not is_port_available(port):
+        print(f"[提示] 端口 {port} 已被占用，正在清理...")
+        kill_port_process(port)
+        import time
+        time.sleep(1)
     
     print(f"正在启动服务... (端口: {port})")
     print()

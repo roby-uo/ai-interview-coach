@@ -8,29 +8,38 @@
    §1  全局主题变量覆盖
    ═══════════════════════════════════════ */
 :root {
-  /* 基底色 */
-  --cl-color-bg: #08080e;
-  --cl-color-surface: #0f0f18;
-  --cl-color-surface-hover: #161622;
+  /* 基底色 — 带有微弱蓝紫倾向的深空色 */
+  --cl-color-bg: #0a0a12;
+  --cl-color-bg-elevated: #10101c;
+  --cl-color-surface: #13131f;
+  --cl-color-surface-hover: #1a1a2e;
 
   /* 边框 */
-  --cl-color-border: rgba(255, 255, 255, 0.06);
-  --cl-color-border-hover: rgba(255, 255, 255, 0.12);
+  --cl-color-border: rgba(255, 255, 255, 0.05);
+  --cl-color-border-hover: rgba(201, 169, 110, 0.2);
 
-  /* 文字 */
-  --cl-color-text: #d4d4dc;
-  --cl-color-text-secondary: #6e6e84;
-  --cl-color-text-tertiary: #44445a;
+  /* 文字 — 4级明度体系 */
+  --cl-color-text: #e8e8f0;
+  --cl-color-text-secondary: #a0a0b8;
+  --cl-color-text-tertiary: #6e6e88;
+  --cl-color-text-quaternary: #444458;
 
-  /* 主强调色 — 琥珀金 */
-  --cl-color-primary: #d4a017;
-  --cl-color-primary-hover: #e8b52e;
-  --cl-color-primary-soft: rgba(212, 160, 23, 0.1);
+  /* 主强调色 — 降饱和暖白金 */
+  --cl-color-primary: #c9a96e;
+  --cl-color-primary-hover: #d4b87a;
+  --cl-color-primary-soft: rgba(201, 169, 110, 0.08);
+  --cl-color-primary-glow: rgba(201, 169, 110, 0.15);
 
-  /* 功能色 */
-  --cl-color-success: #22c55e;
-  --cl-color-danger: #ef4444;
-  --cl-color-warning: #eab308;
+  /* 功能色 — 融入暖色调 */
+  --cl-color-success: #6ecf9e;
+  --cl-color-danger: #e87878;
+  --cl-color-warning: #e8c878;
+
+  /* 技能节点色彩编码 */
+  --cl-color-skill-judge: #e87878;
+  --cl-color-skill-scaffold: #6ecf9e;
+  --cl-color-skill-socratic: #e8c878;
+  --cl-color-skill-teaching: #7ec8e3;
 
   /* 圆角 */
   --cl-radius-sm: 8px;
@@ -38,13 +47,32 @@
   --cl-radius-lg: 16px;
   --cl-radius-xl: 20px;
 
+  /* 字号体系 — 基于 1.125 比率 */
+  --cl-text-xs: 12px;
+  --cl-text-sm: 13px;
+  --cl-text-base: 14px;
+  --cl-text-md: 15px;
+  --cl-text-lg: 17px;
+  --cl-text-xl: 20px;
+  --cl-text-2xl: 24px;
+  --cl-text-3xl: 28px;
+
+  /* 行高体系 */
+  --cl-leading-tight: 1.4;
+  --cl-leading-normal: 1.6;
+  --cl-leading-relaxed: 1.8;
+
   /* 字体 */
-  --cl-font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
-  --cl-font-family-mono: "JetBrains Mono", "Fira Code", monospace;
+  --cl-font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cl-font-family-mono: "JetBrains Mono", "Fira Code", "Noto Sans SC", monospace;
 
   /* 阴影 */
   --cl-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4);
   --cl-shadow-lg: 0 16px 48px -12px rgba(0, 0, 0, 0.5);
+
+  /* 渐变 */
+  --cl-gradient-gold: linear-gradient(135deg, #c9a96e 0%, #a08050 100%);
+  --cl-gradient-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
 }
 
 /* ═══════════════════════════════════════
@@ -56,19 +84,34 @@
 }
 
 /* 自定义滚动条 */
-.cl-root *::-webkit-scrollbar { width: 5px; }
-.cl-root *::-webkit-scrollbar-track { background: transparent; }
-.cl-root *::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+.cl-root *::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
 }
+
+.cl-root *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.cl-root *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 10px !important;
+  border: 2px solid transparent !important;
+  background-clip: content-box !important;
+}
+
 .cl-root *::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(201, 169, 110, 0.3) !important;
+  background-clip: content-box !important;
+}
+
+.cl-root *::-webkit-scrollbar-corner {
+  background: transparent !important;
 }
 
 /* 全局选中色 */
 .cl-root ::selection {
-  background: rgba(212, 160, 23, 0.25);
+  background: rgba(201, 169, 110, 0.25);
   color: #fff;
 }
 
@@ -76,8 +119,9 @@
    §3  侧边栏
    ═══════════════════════════════════════ */
 .cl-sidebar {
-  background: var(--cl-color-surface) !important;
+  background: var(--cl-color-bg) !important;
   border-right: 1px solid var(--cl-color-border) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2) !important;
   backdrop-filter: blur(20px);
 }
 
@@ -102,14 +146,14 @@
 .cl-sidebar .cl-sidebar-item.active {
   background: var(--cl-color-primary-soft) !important;
   color: var(--cl-color-primary) !important;
-  border: 1px solid rgba(212, 160, 23, 0.15) !important;
+  border: 1px solid rgba(201, 169, 110, 0.15) !important;
 }
 
 /* ═══════════════════════════════════════
    §4  顶部导航栏
    ═══════════════════════════════════════ */
 .cl-header {
-  background: rgba(8, 8, 14, 0.85) !important;
+  background: rgba(10, 10, 18, 0.85) !important;
   backdrop-filter: blur(20px) !important;
   border-bottom: 1px solid var(--cl-color-border) !important;
 }
@@ -120,57 +164,76 @@
 
 /* AI 消息 */
 .assistant-message .message-content {
-  background: #111119 !important;
+  background: linear-gradient(135deg, var(--cl-color-surface) 0%, rgba(201, 169, 110, 0.02) 100%) !important;
   border: 1px solid var(--cl-color-border) !important;
   border-left: 3px solid var(--cl-color-primary) !important;
   border-radius: 4px var(--cl-radius) var(--cl-radius) 4px !important;
-  padding: 16px 20px !important;
-  box-shadow: 0 2px 12px -4px rgba(0, 0, 0, 0.3) !important;
+  padding: 18px 22px !important;
+  box-shadow: var(--cl-shadow) !important;
+  position: relative !important;
+}
+
+/* AI 消息顶部微弱渐变高光 */
+.assistant-message .message-content::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent) !important;
 }
 
 /* 用户消息 */
 .user-message .message-content {
-  background: #181830 !important;
-  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  background: var(--cl-color-bg-elevated) !important;
+  border: 1px solid rgba(255, 255, 255, 0.03) !important;
   border-radius: var(--cl-radius) 4px 4px var(--cl-radius) !important;
   padding: 14px 18px !important;
+  max-width: 85% !important;
+  margin-left: auto !important;
 }
 
 /* ═══════════════════════════════════════
    §6  Markdown 内容排版
    ═══════════════════════════════════════ */
 .message-content h1 {
-  font-size: 22px !important;
+  font-size: var(--cl-text-2xl) !important;
   font-weight: 800 !important;
-  color: #f0f0f4 !important;
-  margin-bottom: 12px !important;
-  letter-spacing: -0.02em;
+  color: var(--cl-color-text) !important;
+  line-height: var(--cl-leading-tight) !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 16px !important;
 }
 
 .message-content h2 {
-  font-size: 17px !important;
+  font-size: var(--cl-text-lg) !important;
   font-weight: 700 !important;
-  color: var(--cl-color-primary-hover) !important;
-  margin-bottom: 10px !important;
-  padding-bottom: 6px !important;
+  color: var(--cl-color-primary) !important;
+  line-height: var(--cl-leading-tight) !important;
+  letter-spacing: -0.01em !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 8px !important;
   border-bottom: 1px solid var(--cl-color-border) !important;
 }
 
 .message-content h3 {
-  font-size: 15px !important;
+  font-size: var(--cl-text-md) !important;
   font-weight: 600 !important;
-  color: #e0e0e8 !important;
+  color: #d0d0e0 !important;
+  line-height: var(--cl-leading-tight) !important;
   margin-bottom: 8px !important;
 }
 
 .message-content p {
-  color: #b0b0c0 !important;
-  line-height: 1.8 !important;
-  margin-bottom: 8px !important;
+  color: var(--cl-color-text-secondary) !important;
+  font-size: var(--cl-text-base) !important;
+  line-height: var(--cl-leading-normal) !important;
+  margin-bottom: 10px !important;
 }
 
 .message-content strong {
-  color: #e8e8f0 !important;
+  color: var(--cl-color-text) !important;
   font-weight: 600 !important;
 }
 
@@ -181,9 +244,10 @@
 }
 
 .message-content li {
-  color: #a0a0b4 !important;
-  line-height: 1.8 !important;
-  margin-bottom: 4px !important;
+  color: var(--cl-color-text-secondary) !important;
+  font-size: var(--cl-text-base) !important;
+  line-height: var(--cl-leading-normal) !important;
+  margin-bottom: 6px !important;
 }
 
 .message-content li::marker {
@@ -193,13 +257,26 @@
 /* 引用块 — 教练公式/锦囊专用样式 */
 .message-content blockquote {
   border-left: 3px solid var(--cl-color-primary) !important;
-  background: rgba(212, 160, 23, 0.04) !important;
+  background: linear-gradient(90deg, rgba(201, 169, 110, 0.04), transparent) !important;
   border-radius: 0 var(--cl-radius-sm) var(--cl-radius-sm) 0 !important;
-  padding: 12px 16px !important;
-  margin: 12px 0 !important;
-  color: #9898ac !important;
-  font-size: 14px !important;
-  line-height: 1.8 !important;
+  padding: 14px 18px !important;
+  margin: 16px 0 !important;
+  color: var(--cl-color-text-secondary) !important;
+  font-size: var(--cl-text-sm) !important;
+  line-height: var(--cl-leading-normal) !important;
+  position: relative !important;
+}
+
+/* 引用块左上角装饰 */
+.message-content blockquote::before {
+  content: '"' !important;
+  position: absolute !important;
+  top: 4px !important;
+  left: 8px !important;
+  font-size: 24px !important;
+  color: rgba(201, 169, 110, 0.2) !important;
+  font-family: Georgia, serif !important;
+  line-height: 1 !important;
 }
 
 .message-content blockquote strong {
@@ -209,8 +286,9 @@
 /* 分割线 */
 .message-content hr {
   border: none !important;
-  border-top: 1px solid var(--cl-color-border) !important;
-  margin: 14px 0 !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, var(--cl-color-border-hover), transparent) !important;
+  margin: 20px 0 !important;
 }
 
 /* 行内代码 */
@@ -225,11 +303,38 @@
 
 /* 代码块 */
 .message-content pre {
-  background: #0a0a12 !important;
+  background: #07070f !important;
   border: 1px solid var(--cl-color-border) !important;
   border-radius: var(--cl-radius-sm) !important;
-  padding: 16px !important;
+  padding: 18px !important;
   overflow-x: auto !important;
+  position: relative !important;
+}
+
+/* 代码块顶部语言标识区域 */
+.message-content pre::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 32px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid var(--cl-color-border) !important;
+  border-radius: var(--cl-radius-sm) var(--cl-radius-sm) 0 0 !important;
+}
+
+/* 代码块右上角三个圆点（仿 Mac 窗口） */
+.message-content pre::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 12px !important;
+  left: 14px !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #ff5f56 !important;
+  box-shadow: 14px 0 0 #ffbd2e, 28px 0 0 #27c93f !important;
 }
 
 .message-content pre code {
@@ -260,6 +365,11 @@
   color: #a0a0b4 !important;
 }
 
+.message-content tr:hover td {
+  background: rgba(255, 255, 255, 0.02) !important;
+  transition: background 0.2s !important;
+}
+
 /* ═══════════════════════════════════════
    §7  Action 按钮
    ═══════════════════════════════════════ */
@@ -267,25 +377,51 @@
 .cl-actions button {
   border-radius: var(--cl-radius-sm) !important;
   font-weight: 500 !important;
-  font-size: 13px !important;
+  font-size: var(--cl-text-sm) !important;
   padding: 9px 18px !important;
-  transition: all 0.25s ease !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   border: none !important;
   cursor: pointer !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-/* 主按钮 — 渐变金色 */
+/* 主按钮 — 渐变金色 + 光泽扫过效果 */
 .cl-actions button:first-child,
 .cl-action:first-child {
-  background: linear-gradient(135deg, #d4a017, #b8860b) !important;
-  color: #000 !important;
-  box-shadow: 0 2px 12px rgba(212, 160, 23, 0.15) !important;
+  background: var(--cl-gradient-gold) !important;
+  color: #0a0a12 !important;
+  box-shadow: 0 2px 12px rgba(201, 169, 110, 0.12) !important;
+}
+
+.cl-actions button:first-child::after,
+.cl-action:first-child::after {
+  content: "" !important;
+  position: absolute !important;
+  top: -50% !important;
+  left: -50% !important;
+  width: 200% !important;
+  height: 200% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent) !important;
+  transform: translateX(-100%) rotate(25deg) !important;
+  transition: transform 0.6s !important;
+}
+
+.cl-actions button:first-child:hover::after,
+.cl-action:first-child:hover::after {
+  transform: translateX(100%) rotate(25deg) !important;
 }
 
 .cl-actions button:first-child:hover,
 .cl-action:first-child:hover {
-  box-shadow: 0 6px 24px rgba(212, 160, 23, 0.3) !important;
-  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 32px rgba(201, 169, 110, 0.25) !important;
+  transform: translateY(-2px) !important;
+}
+
+.cl-actions button:first-child:active,
+.cl-action:first-child:active {
+  transform: scale(0.98) translateY(0) !important;
+  transition-duration: 0.1s !important;
 }
 
 /* 次按钮 — 玻璃态 */
@@ -318,14 +454,14 @@
   border-radius: var(--cl-radius) !important;
   color: var(--cl-color-text) !important;
   padding: 12px 16px !important;
-  font-size: 14px !important;
-  transition: border-color 0.2s !important;
+  font-size: var(--cl-text-base) !important;
+  transition: all 0.25s ease !important;
 }
 
 .cl-input-area textarea:focus,
 .cl-input-area input:focus {
-  border-color: rgba(212, 160, 23, 0.4) !important;
-  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.08) !important;
+  border-color: rgba(201, 169, 110, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.06), 0 0 20px rgba(201, 169, 110, 0.08) !important;
   outline: none !important;
 }
 
@@ -337,18 +473,18 @@
 /* 发送按钮 */
 .cl-input-area button[aria-label="Send"],
 .cl-input-area .send-button {
-  background: linear-gradient(135deg, #d4a017, #b8860b) !important;
-  color: #000 !important;
+  background: var(--cl-gradient-gold) !important;
+  color: #0a0a12 !important;
   border: none !important;
   border-radius: var(--cl-radius-sm) !important;
   width: 40px !important;
   height: 40px !important;
-  transition: all 0.2s !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .cl-input-area button[aria-label="Send"]:hover,
 .cl-input-area .send-button:hover {
-  box-shadow: 0 4px 20px rgba(212, 160, 23, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(201, 169, 110, 0.3) !important;
   transform: scale(1.05) !important;
 }
 
@@ -367,7 +503,6 @@
 /* ═══════════════════════════════════════
    §9  加载/打字指示器
    ═══════════════════════════════════════ */
-/* Chainlit 默认的 thinking/spinner 元素 */
 .cl-thinking,
 .thinking-indicator,
 [data-testid="thinking"] {
@@ -379,11 +514,12 @@
 
 .cl-thinking .dot,
 .thinking-indicator .dot {
-  width: 7px !important;
-  height: 7px !important;
+  width: 6px !important;
+  height: 6px !important;
   border-radius: 50% !important;
   background: var(--cl-color-primary) !important;
-  animation: cl-bounce 1.4s ease-in-out infinite !important;
+  box-shadow: 0 0 8px rgba(201, 169, 110, 0.4) !important;
+  animation: cl-bounce 1.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
 }
 
 .cl-thinking .dot:nth-child(2),
@@ -437,11 +573,19 @@
 
 .cl-messages {
   padding: 24px 20px !important;
+  max-width: 800px !important;
+  margin: 0 auto !important;
 }
 
 /* 消息之间的间距 */
 .cl-messages > * + * {
-  margin-top: 20px !important;
+  margin-top: 16px !important;
+}
+
+/* AI 消息与用户消息之间增加额外呼吸空间 */
+.cl-messages > .assistant-message + .user-message,
+.cl-messages > .user-message + .assistant-message {
+  margin-top: 24px !important;
 }
 
 /* ═══════════════════════════════════════
@@ -451,8 +595,10 @@
 .dropzone {
   border: 2px dashed var(--cl-color-border) !important;
   border-radius: var(--cl-radius-lg) !important;
-  background: rgba(255, 255, 255, 0.01) !important;
-  transition: all 0.25s !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.01), rgba(201, 169, 110, 0.02)) !important;
+  transition: all 0.3s ease !important;
+  padding: 40px 20px !important;
+  text-align: center !important;
 }
 
 .cl-file-dropzone:hover,
@@ -460,7 +606,8 @@
 .cl-file-dropzone.drag-over,
 .dropzone.drag-over {
   border-color: var(--cl-color-primary) !important;
-  background: var(--cl-color-primary-soft) !important;
+  background: linear-gradient(135deg, rgba(201, 169, 110, 0.04), rgba(201, 169, 110, 0.08)) !important;
+  transform: scale(1.01) !important;
 }
 
 /* ═══════════════════════════════════════
@@ -470,6 +617,32 @@
 .avatar {
   border-radius: 10px !important;
   border: 2px solid var(--cl-color-border) !important;
+}
+
+/* AI 头像 — 品牌标识 */
+.assistant-message .cl-avatar,
+.assistant-message .avatar {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  background: var(--cl-gradient-gold) !important;
+  border: 2px solid rgba(201, 169, 110, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(201, 169, 110, 0.15) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+}
+
+/* 用户头像 — 极简风格 */
+.user-message .cl-avatar,
+.user-message .avatar {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  background: var(--cl-color-surface-hover) !important;
+  border: 2px solid var(--cl-color-border) !important;
+  color: var(--cl-color-text-secondary) !important;
 }
 
 /* ═══════════════════════════════════════
@@ -497,17 +670,17 @@
   }
 
   .message-content h1 {
-    font-size: 18px !important;
+    font-size: var(--cl-text-xl) !important;
   }
 
   .message-content h2 {
-    font-size: 15px !important;
+    font-size: var(--cl-text-md) !important;
   }
 
   .cl-actions button,
   .cl-action {
     padding: 8px 14px !important;
-    font-size: 12px !important;
+    font-size: var(--cl-text-xs) !important;
   }
 }
 
@@ -515,20 +688,36 @@
    §16  微交互增强
    ═══════════════════════════════════════ */
 
-/* 消息出现动画 */
-@keyframes cl-msg-in {
+/* AI 消息 — 从左侧滑入 */
+@keyframes cl-msg-in-left {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateX(-12px) translateY(4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0) translateY(0);
   }
 }
 
-.cl-messages > * {
-  animation: cl-msg-in 0.35s ease-out !important;
+/* 用户消息 — 从右侧滑入 */
+@keyframes cl-msg-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(12px) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+.assistant-message {
+  animation: cl-msg-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.user-message {
+  animation: cl-msg-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* 按钮点击反馈 */
@@ -544,14 +733,43 @@
 .cl-messages > *:first-child .message-content {
   background: linear-gradient(
     135deg,
-    #111119 0%,
-    rgba(212, 160, 23, 0.03) 100%
+    var(--cl-color-surface) 0%,
+    rgba(201, 169, 110, 0.04) 100%
   ) !important;
   border-left-width: 3px !important;
+  padding: 24px 28px !important;
+}
+
+/* 欢迎消息标题特殊样式 - 使用金色文字替代渐变 */
+.cl-messages > *:first-child .message-content h1 {
+  font-size: var(--cl-text-3xl) !important;
+  color: var(--cl-color-primary) !important;
+  margin-bottom: 20px !important;
+  text-shadow: 0 0 30px rgba(201, 169, 110, 0.15) !important;
 }
 
 /* ═══════════════════════════════════════
-   §18  减少动画偏好适配
+   §18  技能节点色彩编码
+   ═══════════════════════════════════════ */
+/* 为不同技能节点的消息增加左侧标识线色彩变化 */
+.assistant-message[data-skill="judge"] .message-content {
+  border-left-color: var(--cl-color-skill-judge) !important;
+}
+
+.assistant-message[data-skill="scaffold"] .message-content {
+  border-left-color: var(--cl-color-skill-scaffold) !important;
+}
+
+.assistant-message[data-skill="socratic"] .message-content {
+  border-left-color: var(--cl-color-skill-socratic) !important;
+}
+
+.assistant-message[data-skill="teaching"] .message-content {
+  border-left-color: var(--cl-color-skill-teaching) !important;
+}
+
+/* ═══════════════════════════════════════
+   §19  减少动画偏好适配
    ═══════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   *,
