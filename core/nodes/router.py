@@ -1,4 +1,6 @@
 import logging
+import json
+import re
 from typing import Dict, Any
 from langchain_core.messages import SystemMessage, HumanMessage
 
@@ -102,8 +104,24 @@ async def route_node(state: InterviewState) -> Dict[str, Any]:
         HumanMessage(content=human_content)
     ]
 
-    chain = llm.with_structured_output(GodDecision)
-    decision = await chain.ainvoke(messages)
+    raw_response = await llm.ainvoke(messages)
+    raw_str = raw_response.content.strip()
+
+    if "```json" in raw_str:
+        raw_str = raw_str.split("```json")[1].split("```")[0].strip()
+    elif "```" in raw_str:
+        raw_str = raw_str.split("```")[1].split("```")[0].strip()
+
+    try:
+        decision = GodDecision.model_validate_json(raw_str)
+    except Exception as e:
+        logger.error(f"👁️ [路由节点] JSON解析异常降级: {e}, 原始片段: {raw_str[:200]}")
+        decision = GodDecision(
+            reasoning="系统解析异常，触发安全兜底机制",
+            intent_dim="格式混乱",
+            intended_action="smart_redirection",
+            task_prompt="用户输入格式异常，请用一句话安抚，并强制拉回上一轮的面试话题。"
+        )
 
     logger.info(f"👁️ [路由节点] 意图定性: {decision.intent_dim} | 决策动作: {decision.intended_action}")
 

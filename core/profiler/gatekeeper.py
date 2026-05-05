@@ -1,4 +1,6 @@
 import logging
+import json
+import re
 from langchain_core.messages import SystemMessage, HumanMessage
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -52,7 +54,7 @@ class Gatekeeper:
     def _ensure_initialized(self):
         if self._chain is None:
             llm = llm_factory.get_extractor_llm()
-            self._chain = llm.with_structured_output(GatekeeperResult)
+            self._llm = llm
 
     async def aparse(self, raw_input: str) -> GatekeeperResult:
         self._ensure_initialized()
@@ -60,7 +62,27 @@ class Gatekeeper:
             SystemMessage(content=GATEKEEPER_PROMPT),
             HumanMessage(content=f"用户输入内容：\n{raw_input}")
         ]
-        result = await self._chain.ainvoke(messages)
+        
+        raw_response = await self._llm.ainvoke(messages)
+        raw_str = raw_response.content.strip()
+        
+        if "```json" in raw_str:
+            raw_str = raw_str.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw_str:
+            raw_str = raw_str.split("```")[1].split("```")[0].strip()
+        
+        try:
+            result = GatekeeperResult.model_validate_json(raw_str)
+        except Exception as e:
+            logger.error(f"🚪 [门卫] JSON解析异常降级: {e}, 原始片段: {raw_str[:200]}")
+            result = GatekeeperResult(
+                resume_text="",
+                jd_text=None,
+                has_resume=False,
+                has_jd=False,
+                confidence=0.0
+            )
+        
         logger.info(
             f"🚪 [门卫] 识别结果: "
             f"有简历={result.has_resume}, 有JD={result.has_jd}, "
@@ -74,7 +96,27 @@ class Gatekeeper:
             SystemMessage(content=GATEKEEPER_PROMPT),
             HumanMessage(content=f"用户输入内容：\n{raw_input}")
         ]
-        result = self._chain.invoke(messages)
+        
+        raw_response = self._llm.invoke(messages)
+        raw_str = raw_response.content.strip()
+        
+        if "```json" in raw_str:
+            raw_str = raw_str.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw_str:
+            raw_str = raw_str.split("```")[1].split("```")[0].strip()
+        
+        try:
+            result = GatekeeperResult.model_validate_json(raw_str)
+        except Exception as e:
+            logger.error(f"🚪 [门卫] JSON解析异常降级: {e}, 原始片段: {raw_str[:200]}")
+            result = GatekeeperResult(
+                resume_text="",
+                jd_text=None,
+                has_resume=False,
+                has_jd=False,
+                confidence=0.0
+            )
+        
         logger.info(
             f"🚪 [门卫] 识别结果: "
             f"有简历={result.has_resume}, 有JD={result.has_jd}, "

@@ -1,4 +1,6 @@
 import logging
+import json
+import re
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.config import settings
@@ -64,18 +66,37 @@ class Profiler:
     def _ensure_initialized(self):
         if self._chain is None:
             llm = llm_factory.get_extractor_llm()
-            self._chain = DIAGNOSE_WEAKNESS_PROMPT | llm.with_structured_output(WeaknessProfile)
+            self._llm = llm
+            self._prompt = DIAGNOSE_WEAKNESS_PROMPT
 
     @property
     def chain(self):
         self._ensure_initialized()
-        return self._chain
+        return self._prompt, self._llm
 
     def extract(self, resume_text: str, jd_text: str) -> str:
-        raw_profile = self.chain.invoke({
-            "resume_text": resume_text,
-            "jd_text": jd_text
-        })
+        prompt, llm = self.chain
+        messages = prompt.format_messages(
+            resume_text=resume_text,
+            jd_text=jd_text
+        )
+        
+        raw_response = llm.invoke(messages)
+        raw_str = raw_response.content.strip()
+        
+        if "```json" in raw_str:
+            raw_str = raw_str.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw_str:
+            raw_str = raw_str.split("```")[1].split("```")[0].strip()
+        
+        try:
+            raw_profile = WeaknessProfile.model_validate_json(raw_str)
+        except Exception as e:
+            logger.error(f"📊 [画像提取] JSON解析异常: {e}, 原始片段: {raw_str[:200]}")
+            raw_profile = WeaknessProfile(
+                weakness_tags=["能力待评估"],
+                forbidden_words=["不清楚", "不知道"]
+            )
 
         final_profile = safe_parse_weakness(raw_profile)
         logger.info(f"✅ 画像生成完毕: {final_profile.to_prompt_prefix[:50]}...")
@@ -83,10 +104,28 @@ class Profiler:
         return final_profile.to_prompt_prefix
 
     def extract_full(self, resume_text: str, jd_text: str) -> WeaknessProfile:
-        raw_profile = self.chain.invoke({
-            "resume_text": resume_text,
-            "jd_text": jd_text
-        })
+        prompt, llm = self.chain
+        messages = prompt.format_messages(
+            resume_text=resume_text,
+            jd_text=jd_text
+        )
+        
+        raw_response = llm.invoke(messages)
+        raw_str = raw_response.content.strip()
+        
+        if "```json" in raw_str:
+            raw_str = raw_str.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw_str:
+            raw_str = raw_str.split("```")[1].split("```")[0].strip()
+        
+        try:
+            raw_profile = WeaknessProfile.model_validate_json(raw_str)
+        except Exception as e:
+            logger.error(f"📊 [画像提取] JSON解析异常: {e}, 原始片段: {raw_str[:200]}")
+            raw_profile = WeaknessProfile(
+                weakness_tags=["能力待评估"],
+                forbidden_words=["不清楚", "不知道"]
+            )
 
         return safe_parse_weakness(raw_profile)
 
