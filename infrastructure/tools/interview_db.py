@@ -11,15 +11,34 @@ logger = logging.getLogger(__name__)
 
 SceneMode = Literal["train", "review"]
 
+_CURRENT_JOB_TYPE: str = ""
+
+
+def set_current_job_type(job_type: str):
+    global _CURRENT_JOB_TYPE
+    _CURRENT_JOB_TYPE = job_type
+    logger.info(f"🔧 [Tool] 当前岗位已切换为: {job_type}")
+
+
+def get_current_job_type() -> str:
+    global _CURRENT_JOB_TYPE
+    if not _CURRENT_JOB_TYPE:
+        from domain.job_configs import list_available_jobs
+        available = list_available_jobs()
+        if available:
+            _CURRENT_JOB_TYPE = available[0]
+            logger.info(f"🔧 [Tool] 未设置岗位，自动使用默认岗位: {_CURRENT_JOB_TYPE}")
+    return _CURRENT_JOB_TYPE
+
 
 @tool
 def search_interview_db(
-    user_query: str, 
-    scene_mode: SceneMode = "train"
+    user_query: str,
+    scene_mode: SceneMode = "train",
+    job_type: str = ""
 ) -> str:
     """
-    当用户的话里包含任何【业务名词】（如：数据、流量、转化、ROI、阅读量、爆款、用户增长、留存、GMV、DAU、MAU等），
-    无论用户是在抱怨、是在闲聊、还是在正经回答，都必须调用此工具！
+    当用户的话里包含任何【业务名词】时，无论用户是在抱怨、闲聊、还是在正经回答，都必须调用此工具！
     因为用户的随口一句抱怨，往往暴露了最真实的认知盲区。
 
     【红色警报】如果调用此工具后，返回的结果包含"未检索到"字样，你绝对不允许捏造或猜测任何面经内容！
@@ -45,22 +64,25 @@ def search_interview_db(
     scene_mode: 场景模式开关。
                  - 传入 "train" 时：返回隐藏公式的【判卷清单】（用于模拟训练，防泄题）。
                  - 传入 "review" 时：返回包含标准答案的【满分公式】（用于面试复盘，做对比）。
+    job_type: 岗位类型，用于检索对应岗位的题库。如果不传，使用当前会话的岗位。
     返回:
     从面经库中检索出的结构化字符串。
     """
     if not validate_scene_mode(scene_mode):
         logger.warning(f"⚠️ 非法scene_mode: {scene_mode}，强制使用train模式")
         scene_mode = "train"
-    
-    logger.info(f"🛠️ [Tool 触发] 准备检索，查询词: {user_query}, 模式: {scene_mode}")
-    
-    retriever = get_hybrid_retriever()
-    
+
+    effective_job_type = job_type or _CURRENT_JOB_TYPE
+
+    logger.info(f"🛠️ [Tool 触发] 准备检索，查询词: {user_query}, 模式: {scene_mode}, 岗位: {effective_job_type}")
+
+    retriever = get_hybrid_retriever(effective_job_type)
+
     docs = retriever.invoke(user_query)
-    
+
     if not docs:
         return "未检索到相关面经数据。"
-    
+
     results = []
     for doc in docs:
         raw_data = doc.metadata.get("raw_data", {})
@@ -84,7 +106,7 @@ def search_interview_db(
                 f"【雷区红线】: {raw_data.get('pitfall_guide')}"
             )
         results.append(result_str)
-        
+
     return "\n\n---\n\n".join(results)
 
 INTERVIEW_TOOLS = [search_interview_db]

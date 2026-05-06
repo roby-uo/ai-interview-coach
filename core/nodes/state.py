@@ -17,5 +17,7 @@ def create_initial_state() -> InterviewState:
         "should_end": False,
         "file_name": "",
         "jd_text": "",
-        "resume_text": ""
+        "resume_text": "",
+        "gap_analysis": "",
+        "job_type": ""
     }

@@ -12,7 +12,7 @@ from core.graph import (
     graph_runner,
     InterviewGraphRunner
 )
-from core.profiler import Profiler, profiler
+from core.profiler import Profiler, get_profiler
 from core.skills import SKILL_NODE_MAP
 
 __all__ = [
@@ -27,6 +27,6 @@ __all__ = [
     "graph_runner",
     "InterviewGraphRunner",
     "Profiler",
-    "profiler",
+    "get_profiler",
     "SKILL_NODE_MAP"
 ]

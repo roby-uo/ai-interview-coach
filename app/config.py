@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     ROUTER_MODEL_NAME: str = "deepseek-v3"
     FAST_MODEL_NAME: str = "qwen-turbo"
+    OFFLINE_MODEL_NAME: str = "qwen3.6-flash"
     EMBEDDING_MODEL_NAME: str = "text-embedding-v4"
 
     FAISS_TOP_K: int = 3
@@ -40,6 +41,21 @@ class Settings(BaseSettings):
 
     def get_app_root(self) -> Path:
         return Path(__file__).parent.parent.resolve()
+
+    def get_jobs_data_dir(self) -> Path:
+        return self.get_app_root() / "data" / "jobs"
+
+    def get_job_data_dir(self, job_type: str) -> Path:
+        return self.get_jobs_data_dir() / job_type
+
+    def get_job_raw_dir(self, job_type: str) -> Path:
+        return self.get_job_data_dir(job_type) / "raw"
+
+    def get_job_processed_dir(self, job_type: str) -> Path:
+        return self.get_job_data_dir(job_type) / "processed"
+
+    def get_job_index_dir(self, job_type: str) -> Path:
+        return self.get_job_data_dir(job_type) / "index"
 
 
 settings = Settings()

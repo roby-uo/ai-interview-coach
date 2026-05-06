@@ -21,43 +21,15 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from app.config import settings
 from infrastructure.parsers.file_parser import extract_text_from_file
 from domain.schemas import InterviewState
+from domain.job_configs import load_job_config, list_available_jobs, get_job_config_or_default
 from core.nodes import create_initial_state
 from core.graph import graph_runner
-from core.profiler import profiler, gatekeeper
+from core.profiler.extractor import get_profiler
+from core.profiler.gap_analyzer import get_gap_analyzer
+from infrastructure.tools.interview_db import set_current_job_type, get_current_job_type
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
-
-DEMO_RESUME = """姓名：李四
-联系方式：13900139000
-邮箱：lisi@email.com
-
-教育背景：
-2019-2023 暨南大学 新闻学 本科
-
-工作经历：
-2023-2026 某MCN机构 新媒体运营专员
-- 负责公司抖音账号矩阵运营，粉丝总量从5万增长至30万
-- 策划并执行3场直播带货活动，GMV累计50万
-- 撰写小红书种草笔记100+篇，平均互动率8%
-- 协助品牌客户制定社媒投放方案
-
-技能：
-抖音运营、小红书运营、直播带货、文案撰写、数据分析、Canva、剪映"""
-
-DEMO_JD = """岗位名称：资深新媒体运营
-岗位职责：
-1. 负责品牌全媒体矩阵（抖音/小红书/视频号）的内容策略制定与执行
-2. 搭建并管理KOL/KOC资源库，维护达人合作体系
-3. 制定数据驱动的运营增长策略，建立ROI评估体系
-4. 带领2-3人运营小组，制定内容SOP和培训体系
-5. 跨部门协调，推动品牌传播与电商转化联动
-任职要求：
-1. 3年以上新媒体运营经验，有爆款操盘案例
-2. 深度理解各平台算法机制与流量逻辑
-3. 具备数据分析能力，能独立完成复盘报告
-4. 有团队管理经验，能搭建内容SOP
-5. 有品牌方或4A公司经验优先"""
 
 
 class FileWrapper:
@@ -125,9 +97,8 @@ async def generate_report_action(action: cl.Action):
         
         reset_action = cl.Action(
             name="reset_session",
-            value="reset",
             label="🔄 开始新一轮训练",
-            payload={}
+            payload={"action": "reset"}
         )
         await cl.Message(
             content="\n---\n✅ **训练已完成！** 如需开始新一轮训练，请点击下方按钮：",
@@ -150,9 +121,8 @@ async def generate_report_action(action: cl.Action):
         
         retry_action = cl.Action(
             name="generate_report",
-            value="report",
             label="✅ 结束训练并生成报告",
-            payload={}
+            payload={"action": "report"}
         )
         await cl.Message(
             content="❌ 报告生成失败，请重试：",
@@ -168,6 +138,7 @@ async def reset_session_action(action: cl.Action):
     cl.user_session.set("thread_id", new_thread_id)
     cl.user_session.set("is_generating_report", False)
     cl.user_session.set("session_ended", False)
+    cl.user_session.set("selected_job_type", None)
     
     initial_state = create_initial_state()
     await graph_runner.update_state(new_thread_id, initial_state)
@@ -176,27 +147,74 @@ async def reset_session_action(action: cl.Action):
     
     await action.remove()
     
+    await _show_job_selection()
+
+
+@cl.action_callback("select_job")
+async def select_job_action(action: cl.Action):
+    job_type = action.payload.get("job_type") if action.payload else None
+    if not job_type:
+        await cl.Message(content="❌ 岗位信息获取失败").send()
+        return
+    cl.user_session.set("selected_job_type", job_type)
+    set_current_job_type(job_type)
+    await action.remove()
+
+    try:
+        config = load_job_config(job_type)
+    except FileNotFoundError:
+        await cl.Message(content=f"❌ 未找到岗位配置: {job_type}").send()
+        return
+
     actions = [
         cl.Action(
             name="quick_start",
-            value="quick_start",
             label="⚡ 快速体验模式",
-            payload={}
+            payload={"action": "quick_start"}
         ),
         cl.Action(
             name="generate_report",
-            value="report",
             label="✅ 结束训练并生成报告",
-            payload={}
+            payload={"action": "report"}
         )
     ]
-    
+
     await cl.Message(
-        content="🔄 **已重置！** 请发送你的简历和目标岗位JD，开始新一轮训练。",
+        content=f"✅ 已选择岗位：**{config.display_name}**\n\n"
+                f"请发送你的 **简历（PDF/TXT）** 和 **目标岗位 JD**，或点击「⚡ 快速体验模式」使用示例数据开始训练。",
         actions=actions
     ).send()
-    
-    logger.info(f"🔄 [会话重置] 新会话ID: {new_thread_id}")
+
+
+async def _show_job_selection():
+    available_jobs = list_available_jobs()
+
+    if not available_jobs:
+        await cl.Message(content="❌ 没有找到任何岗位配置，请先在 domain/job_configs/ 下创建 YAML 配置文件。").send()
+        return
+
+    job_actions = []
+    for job_type in available_jobs:
+        try:
+            config = load_job_config(job_type)
+            job_actions.append(
+                cl.Action(
+                    name="select_job",
+                    label=f"📋 {config.display_name}",
+                    payload={"job_type": job_type}
+                )
+            )
+        except Exception:
+            continue
+
+    if not job_actions:
+        await cl.Message(content="❌ 岗位配置加载失败，请检查 YAML 文件格式。").send()
+        return
+
+    await cl.Message(
+        content="🎯 **请选择你要训练的岗位：**",
+        actions=job_actions
+    ).send()
 
 
 @cl.on_chat_start
@@ -207,24 +225,10 @@ async def start():
     cl.user_session.set("thread_id", thread_id)
     cl.user_session.set("is_generating_report", False)
     cl.user_session.set("session_ended", False)
+    cl.user_session.set("selected_job_type", None)
 
     initial_state = create_initial_state()
     await graph_runner.update_state(thread_id, initial_state)
-
-    actions = [
-        cl.Action(
-            name="quick_start",
-            value="quick_start",
-            label="⚡ 快速体验模式",
-            payload={}
-        ),
-        cl.Action(
-            name="generate_report",
-            value="report",
-            label="✅ 结束训练并生成报告",
-            payload={}
-        )
-    ]
 
     welcome_content = """# AI 面试教练 👔🎯
 
@@ -239,23 +243,21 @@ async def start():
 
 ## 开始使用
 
-直接把你的 **简历（PDF/TXT）** 和 **目标岗位 JD** 粘贴到对话框。
-
-我会先为你建立能力画像，然后开始模拟面试训练！
+1. **选择岗位** 👇 从下方按钮选择你要训练的岗位
+2. **发送资料** 📄 把你的简历（PDF/TXT）和目标岗位 JD 粘贴到对话框
+3. **开始训练** 🎯 系统会为你建立能力画像，然后开始模拟面试
 
 ---
 
 > 💡 **Tips**: 所有问题均针对你的弱点定制，模拟大厂面试官的刁钻提问。卡住时尽管求助，我会给你满分公式化提示，带你一步步拆解思路。
 
-*可以选择快速体验模式👇，系统已准备简历和JD*
 *来头脑风暴吧🧠，你准备好接受挑战了吗？* 💪
 
 """
 
-    await cl.Message(
-        content=welcome_content,
-        actions=actions
-    ).send()
+    await cl.Message(content=welcome_content).send()
+
+    await _show_job_selection()
 
 
 @cl.on_message
@@ -269,6 +271,18 @@ async def main(message: cl.Message):
             content="✅ 本轮训练已结束。如需开始新训练，请点击上方的「开始新一轮训练」按钮，或刷新页面。"
         ).send()
         return
+
+    selected_job_type = cl.user_session.get("selected_job_type")
+    if not selected_job_type:
+        available_jobs = list_available_jobs()
+        if len(available_jobs) == 1:
+            selected_job_type = available_jobs[0]
+            cl.user_session.set("selected_job_type", selected_job_type)
+            set_current_job_type(selected_job_type)
+        else:
+            await cl.Message(content="⚠️ 请先选择你要训练的岗位 👆").send()
+            await _show_job_selection()
+            return
 
     thread_id = get_thread_id()
     state = await graph_runner.get_state(thread_id)
@@ -319,6 +333,7 @@ async def main(message: cl.Message):
 
         await cl.Message(content="🚪 门卫正在智能识别你的输入内容...").send()
         
+        from core.profiler import gatekeeper
         try:
             gatekeeper_result = await gatekeeper.aparse(combined_text)
         except Exception as e:
@@ -344,17 +359,25 @@ async def main(message: cl.Message):
             cl.user_session.set("waiting_for_jd_decision", True)
             cl.user_session.set("pending_resume_text", final_resume)
             
+            try:
+                job_config = load_job_config(selected_job_type)
+                default_jd_label = f"📋 使用{job_config.display_name}通用标准"
+            except FileNotFoundError:
+                default_jd_label = "📋 使用通用标准"
+
             jd_actions = [
-                cl.Action(name="use_default_jd", value="default", label="📋 使用通用标准", payload={}),
-                cl.Action(name="input_jd", value="input", label="✏️ 我来输入JD", payload={})
+                cl.Action(name="use_default_jd", label=default_jd_label, payload={"action": "default"}),
+                cl.Action(name="input_jd", label="✏️ 我来输入JD", payload={"action": "input"})
             ]
             await cl.Message(
-                content="⚠️ 未检测到目标岗位JD。请选择：\n\n- 📋 **使用通用标准**：使用通用新媒体运营岗位要求进行训练\n- ✏️ **我来输入JD**：在对话框中粘贴目标岗位JD",
+                content="⚠️ 未检测到目标岗位JD。请选择：\n\n"
+                        f"- {default_jd_label}：使用通用岗位要求进行训练\n"
+                        "- ✏️ **我来输入JD**：在对话框中粘贴目标岗位JD",
                 actions=jd_actions
             ).send()
             return
 
-        await _initialize_training(thread_id, final_resume, final_jd)
+        await _initialize_training(thread_id, final_resume, final_jd, selected_job_type)
         return
     
     if cl.user_session.get("waiting_for_jd_decision"):
@@ -363,11 +386,16 @@ async def main(message: cl.Message):
         if decision in ["继续", "继续训练", "跳过", "使用通用标准", "1", "default"]:
             pending_resume = cl.user_session.get("pending_resume_text", "")
             cl.user_session.set("waiting_for_jd_decision", False)
-            await _initialize_training(thread_id, pending_resume, "通用新媒体运营岗位要求")
+            try:
+                job_config = load_job_config(selected_job_type)
+                default_jd = job_config.default_jd or "通用岗位要求"
+            except FileNotFoundError:
+                default_jd = "通用岗位要求"
+            await _initialize_training(thread_id, pending_resume, default_jd, selected_job_type)
             return
         else:
             cl.user_session.set("waiting_for_jd_decision", False)
-            await _initialize_training(thread_id, cl.user_session.get("pending_resume_text", ""), user_raw_input)
+            await _initialize_training(thread_id, cl.user_session.get("pending_resume_text", ""), user_raw_input, selected_job_type)
             return
 
     if not user_raw_input:
@@ -399,9 +427,8 @@ async def main(message: cl.Message):
             actions = [
                 cl.Action(
                     name="generate_report",
-                    value="report",
                     label="✅ 结束训练并生成报告",
-                    payload={}
+                    payload={"action": "report"}
                 )
             ]
             await cl.Message(
@@ -435,7 +462,15 @@ async def use_default_jd_action(action: cl.Action):
     pending_resume = cl.user_session.get("pending_resume_text", "")
     cl.user_session.set("waiting_for_jd_decision", False)
     await action.remove()
-    await _initialize_training(thread_id, pending_resume, "通用新媒体运营岗位要求")
+
+    selected_job_type = cl.user_session.get("selected_job_type")
+    try:
+        job_config = load_job_config(selected_job_type)
+        default_jd = job_config.default_jd or "通用岗位要求"
+    except FileNotFoundError:
+        default_jd = "通用岗位要求"
+
+    await _initialize_training(thread_id, pending_resume, default_jd, selected_job_type)
 
 
 @cl.action_callback("input_jd")
@@ -449,41 +484,97 @@ async def input_jd_action(action: cl.Action):
 async def quick_start_action(action: cl.Action):
     thread_id = get_thread_id()
     await action.remove()
-    await _initialize_training(thread_id, DEMO_RESUME, DEMO_JD)
+
+    selected_job_type = cl.user_session.get("selected_job_type")
+    if not selected_job_type:
+        available_jobs = list_available_jobs()
+        if available_jobs:
+            selected_job_type = available_jobs[0]
+            cl.user_session.set("selected_job_type", selected_job_type)
+            set_current_job_type(selected_job_type)
+
+    try:
+        config = load_job_config(selected_job_type)
+        demo_resume = config.demo_resume
+        demo_jd = config.demo_jd
+    except FileNotFoundError:
+        config = get_job_config_or_default()
+        demo_resume = config.demo_resume
+        demo_jd = config.demo_jd
+
+    await _initialize_training(thread_id, demo_resume, demo_jd, selected_job_type)
 
 
-async def _initialize_training(thread_id: str, resume_text: str, jd_text: str):
-    logger.info(f"🧬 [初始化流水线] 通过防线。简历长度: {len(resume_text)}, JD长度: {len(jd_text)}")
+async def _initialize_training(thread_id: str, resume_text: str, jd_text: str, job_type: str = None):
+    effective_job_type = job_type or get_current_job_type()
+    set_current_job_type(effective_job_type)
+
+    logger.info(f"🧬 [初始化流水线] 通过防线。简历长度: {len(resume_text)}, JD长度: {len(jd_text)}, 岗位: {effective_job_type}")
     await cl.Message(content="🧠 检测到背景资料，正在深度分析弱点画像...").send()
 
     try:
-        weakness_prefix = await asyncio.to_thread(profiler.extract, resume_text, jd_text)
+        job_profiler = get_profiler(effective_job_type)
+        profile = await asyncio.to_thread(job_profiler.extract_full, resume_text, jd_text)
+        weakness_prefix = profile.to_prompt_prefix
 
         updates = {
             "weakness_prefix": weakness_prefix,
             "is_ready": True,
             "resume_text": resume_text,
             "jd_text": jd_text,
+            "job_type": effective_job_type,
             "history": [HumanMessage(content="[用户上传了简历和JD]")]
         }
         await graph_runner.update_state(thread_id, updates)
+
+        await cl.Message(content="📊 正在生成差距分析报告...").send()
+        job_gap_analyzer = get_gap_analyzer(effective_job_type)
+        gap_result = await asyncio.to_thread(job_gap_analyzer.analyze, resume_text, jd_text, profile)
+
+        gap_analysis_json = gap_result.model_dump_json()
+        await graph_runner.update_state(thread_id, {"gap_analysis": gap_analysis_json})
+
+        weakness_lines = "\n".join([f"> - {w}" for w in gap_result.weaknesses])
+        suggestion_lines = "\n".join([f"> - {s}" for s in gap_result.resume_suggestions])
+
+        gap_display = f"""# 🎯 JD和您的简历Gap(差距)
+
+> **⚠️ 您的弱点：**
+{weakness_lines}
+
+> **💡 建议简历修改方向：**
+{suggestion_lines}
+
+---
+
+<div style="text-align: center; font-size: 1.3em; color: #e87878; font-weight: 600; margin: 16px 0;">现在正式开始进入面试环节</div>
+
+<div style="font-size: 1.1em; color: #c9a96e; font-weight: 500;">你好，我是今天的面试官</div>"""
+
+        await cl.Message(content=gap_display).send()
 
         logger.info("🎯 [初始化流水线] 正在根据弱点画像去题库检索第一道题...")
         from infrastructure.tools.interview_db import search_interview_db
         first_question_context = await asyncio.to_thread(
             search_interview_db.invoke,
-            {"user_query": weakness_prefix, "scene_mode": "train"}
+            {"user_query": weakness_prefix, "scene_mode": "train", "job_type": effective_job_type}
         )
 
         from core.utils.llm_factory import llm_factory
 
+        try:
+            job_config = load_job_config(effective_job_type)
+            interviewer_persona = job_config.interviewer_persona
+        except FileNotFoundError:
+            interviewer_persona = "你是一个冷酷专业的面试官"
+
         kick_off_llm = llm_factory.get_llm(settings.ROUTER_MODEL_NAME, temperature=0.7)
         kick_off_msgs = [
-            SystemMessage(content=f"你是一个冷酷专业的面试官。{weakness_prefix}"),
+            SystemMessage(content=f"{interviewer_persona}。{weakness_prefix}"),
             HumanMessage(content=f"这是我从题库里为你匹配的基础素材：\n{first_question_context}\n\n请基于上述素材，结合用户的弱点，用你自己的话术，抛出第一个极其刁钻的面试问题。只提问，不要解释素材。")
         ]
 
-        response_msg = cl.Message(content="✅ 画像已锁定，正在根据你的死穴定制开场问题...\n\n")
+        response_msg = cl.Message(content="")
         await response_msg.send()
 
         full_response = ""

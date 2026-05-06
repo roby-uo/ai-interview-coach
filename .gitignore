@@ -29,3 +29,7 @@ ENV/
 *.swp
 *.swo
 .DS_Store
+
+data/jobs/
+*.faiss
+*.jsonl

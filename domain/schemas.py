@@ -14,8 +14,8 @@ VALID_ACTIONS = [
 
 class InterviewQuestion(BaseModel):
     job_type: str = Field(
-        default="新媒体运营",
-        description="岗位类型，MVP阶段固定为新媒体运营"
+        ...,
+        description="岗位类型，如：新媒体运营、产品经理、前端开发等"
     )
     question: str = Field(
         ...,
@@ -128,6 +128,19 @@ class GodDecision(BaseModel):
     )
 
 
+class GapAnalysisResult(BaseModel):
+    weaknesses: List[str] = Field(
+        ...,
+        min_length=1,
+        description="从弱点分析中提取的关键弱点描述列表，每条需具体说明差距内容"
+    )
+    resume_suggestions: List[str] = Field(
+        ...,
+        min_length=1,
+        description="基于弱点分析的针对性简历优化建议列表，每条需给出具体可行的修改策略"
+    )
+
+
 class InterviewState(TypedDict):
     history: Annotated[list, add_messages]
     weakness_prefix: str
@@ -144,3 +157,5 @@ class InterviewState(TypedDict):
     file_name: str
     jd_text: str
     resume_text: str
+    gap_analysis: str
+    job_type: str
