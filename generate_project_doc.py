@@ -21,7 +21,7 @@ class Config:
     EXCLUDE_DIRS: Set[str] = field(default_factory=lambda: {
         "__pycache__", ".git", ".venv", "venv", "node_modules",
         ".chainlit", ".files", ".vscode", ".idea", ".pytest_cache",
-        "dist", "build", "*.egg-info"
+        "dist", "build", "*.egg-info", "jobs"
     })
     
     EXCLUDE_EXTENSIONS: Set[str] = field(default_factory=lambda: {
@@ -31,7 +31,7 @@ class Config:
     })
     
     INCLUDE_EXTENSIONS: Set[str] = field(default_factory=lambda: {
-        ".py"
+        ".py", ".yaml", ".yml"
     })
     
     EXCLUDE_FILES: Set[str] = field(default_factory=lambda: {
@@ -72,6 +72,16 @@ def should_include_file(file_name: str) -> bool:
     
     ext = Path(file_name).suffix.lower()
     return ext in config.INCLUDE_EXTENSIONS
+
+
+def get_language_by_extension(file_path: Path) -> str:
+    ext = file_path.suffix.lower()
+    lang_map = {
+        '.py': 'python',
+        '.yaml': 'yaml',
+        '.yml': 'yaml',
+    }
+    return lang_map.get(ext, 'text')
 
 
 class TreeGenerator:
@@ -178,8 +188,8 @@ class DocumentationGenerator:
             "- [核心代码](#核心代码)",
             "  - [应用层 (app/)](#应用层-app)",
             "  - [核心层 (core/)](#核心层-core)",
-            "  - [数据层 (data/)](#数据层-data)",
             "  - [领域层 (domain/)](#领域层-domain)",
+            "    - [岗位配置 (domain/job_configs/)](#岗位配置-domainjob_configs)",
             "  - [基础设施层 (infrastructure/)](#基础设施层-infrastructure)",
             "  - [脚本 (scripts/)](#脚本-scripts)",
             "- [统计信息](#统计信息)",
@@ -205,10 +215,11 @@ class DocumentationGenerator:
             "| `core/` | 核心业务逻辑（LangGraph图、节点、技能、用户画像） |",
             "| `core/utils/` | 工具模块（LLM工厂、通用工具函数） |",
             "| `data/` | 数据层（向量索引、处理后数据、原始数据） |",
+            "| `data/jobs/{岗位}/` | 各岗位独立数据目录（raw/processed/index） |",
             "| `domain/` | 领域模型、数据结构和业务验证 |",
-            "| `domain/job_configs/` | 岗位配置文件（YAML格式，支持多岗位） |",
+            "| `domain/job_configs/` | 岗位配置文件（YAML格式） |",
             "| `infrastructure/` | 基础设施（解析器、检索器、工具） |",
-            "| `scripts/` | 构建索引、数据处理脚本、CLI管理工具 |",
+            "| `scripts/` | 构建索引、数据处理、CLI管理工具 |",
             "| `public/` | Chainlit静态资源（CSS等） |",
             "| `.chainlit/` | Chainlit配置 |",
             "",
@@ -225,10 +236,9 @@ class DocumentationGenerator:
         dir_order = [
             ('app', '应用层 (app/)', 'Chainlit应用入口和配置'),
             ('core', '核心层 (core/)', 'LangGraph图定义、节点实现、技能模块、用户画像'),
-            ('data', '数据层 (data/)', '向量索引、处理后数据、原始数据'),
-            ('domain', '领域层 (domain/)', '数据模型、业务实体和验证规则'),
+            ('domain', '领域层 (domain/)', '数据模型、业务实体、岗位配置'),
             ('infrastructure', '基础设施层 (infrastructure/)', '文件解析、向量检索、工具集成'),
-            ('scripts', '脚本 (scripts/)', '构建索引和数据处理脚本'),
+            ('scripts', '脚本 (scripts/)', '构建索引、数据处理、CLI管理工具'),
         ]
         
         for dir_name, title, description in dir_order:
@@ -257,7 +267,8 @@ class DocumentationGenerator:
         grouped = {}
         for file_path in files:
             rel_path = file_path.relative_to(self.config.PROJECT_ROOT)
-            top_dir = rel_path.parts[0] if len(rel_path.parts) > 1 else 'root'
+            parts = rel_path.parts
+            top_dir = parts[0] if len(parts) > 1 else 'root'
             if top_dir not in grouped:
                 grouped[top_dir] = []
             grouped[top_dir].append(file_path)
@@ -272,36 +283,72 @@ class DocumentationGenerator:
             ""
         ]
         
+        job_config_files = []
+        other_files = []
+        
         for file_path in files:
             rel_path = file_path.relative_to(self.config.PROJECT_ROOT)
+            if 'job_configs' in str(rel_path) and file_path.suffix in ('.yaml', '.yml'):
+                job_config_files.append(file_path)
+            else:
+                other_files.append(file_path)
+        
+        for file_path in other_files:
+            rel_path = file_path.relative_to(self.config.PROJECT_ROOT)
             content = self.code_packager.get_file_content(file_path)
+            lang = get_language_by_extension(file_path)
             
             sections.append(f"#### `{rel_path}`")
             sections.append("")
-            sections.append("```python")
+            sections.append(f"```{lang}")
             sections.append(content)
             sections.append("```")
             sections.append("")
+        
+        if job_config_files:
+            sections.append("#### 岗位配置 (domain/job_configs/)")
+            sections.append("")
+            sections.append("*岗位配置文件，定义各岗位的Prompt、示例数据等*")
+            sections.append("")
+            
+            for file_path in job_config_files:
+                rel_path = file_path.relative_to(self.config.PROJECT_ROOT)
+                content = self.code_packager.get_file_content(file_path)
+                
+                sections.append(f"##### `{rel_path}`")
+                sections.append("")
+                sections.append("```yaml")
+                sections.append(content)
+                sections.append("```")
+                sections.append("")
         
         return sections
     
     def _generate_statistics(self, files: List[Path]) -> List[str]:
         total_lines = 0
         total_size = 0
-        file_stats = []
+        py_count = 0
+        yaml_count = 0
         
         for file_path in files:
             stats = self.code_packager.get_file_stats(file_path)
             total_lines += stats['lines']
             total_size += stats['size']
-            file_stats.append((file_path, stats))
+            
+            ext = file_path.suffix.lower()
+            if ext == '.py':
+                py_count += 1
+            elif ext in ('.yaml', '.yml'):
+                yaml_count += 1
         
         return [
             "---",
             "",
             "## 统计信息",
             "",
-            f"- **Python 文件数量**: {len(files)}",
+            f"- **Python 文件数量**: {py_count}",
+            f"- **YAML 配置文件数量**: {yaml_count}",
+            f"- **总文件数量**: {len(files)}",
             f"- **总代码行数**: {total_lines:,}",
             f"- **总文件大小**: {total_size / 1024:.1f} KB",
             ""
@@ -340,7 +387,9 @@ def main():
     
     print("[3/3] 打包核心代码...")
     files = generator.code_packager.scan()
-    print(f"      共 {len(files)} 个 Python 文件")
+    py_count = sum(1 for f in files if f.suffix == '.py')
+    yaml_count = sum(1 for f in files if f.suffix in ('.yaml', '.yml'))
+    print(f"      共 {py_count} 个 Python 文件, {yaml_count} 个 YAML 配置")
     
     output_path = generator.save()
     print()
