@@ -22,16 +22,19 @@ def _build_mine_questions_prompt(job_config) -> ChatPromptTemplate:
 
     return ChatPromptTemplate.from_messages([
         ("system", f"""{interviewer_persona}
-你的任务是从一篇杂乱的{job_type}面经长文中，精准提取出面试问题及其背后的底层逻辑。
+你的任务是从一篇杂乱的{job_type}面经长文中，精准提取出【所有】面试问题及其背后的底层逻辑。
 
 ═══════════════════════════════════════
 §1 基座规则
 ═══════════════════════════════════════
 
 你必须严格按照提供的 JSON Schema 格式输出，不要输出任何解释性文字，只要纯 JSON。
+输出格式为：{{{{"questions": [问题1, 问题2, ...]}}}}
+
+⚠️ 关键要求：必须提取文本中的【每一个】面试问题，不要遗漏！不要只总结一个泛泛的问题！
 
 提取要求：
-1. 问题必须是面试官的真实提问，不要总结。
+1. 问题必须是面试官的真实提问，不要总结合并。原文有N个问题就输出N条。
 2. 考察点 要一针见血（如：数据归因能力，而不是泛泛的"分析能力"）。
 3. 高分公式 必须具备可执行性（如：STAR+漏斗模型+具体Action）。
 4. 避坑指南 必须指出具体的"送命题"话术，并用引导性的语气说明为什么这样回答会扣分。
@@ -76,6 +79,11 @@ def _build_mine_textbook_prompt(job_config) -> ChatPromptTemplate:
 ═══════════════════════════════════════
 §1 基座规则
 ═══════════════════════════════════════
+
+你必须严格按照提供的 JSON Schema 格式输出，不要输出任何解释性文字，只要纯 JSON。
+输出格式为：{{{{"questions": [问题1, 问题2, ...]}}}}
+
+⚠️ 关键要求：必须提取文本中的【每一个】面试问题，不要遗漏！原文有N道题就输出N条，不要合并或只总结一个！
 
 提取与再创作要求：
 1. question：保留原题的核心考点，但如果原题太长，精简为口语化的面试提问。
@@ -196,7 +204,7 @@ def mine_textbook_to_questions(
     chunks = [all_text[i:i+chunk_size] for i in range(0, len(all_text), chunk_size)]
 
     llm = ChatOpenAI(
-        model=settings.OFFLINE_MODEL_NAME,
+        model=settings.FAST_MODEL_NAME,
         api_key=settings.OPENAI_API_KEY,
         base_url=settings.OPENAI_BASE_URL,
         temperature=0.1
@@ -211,7 +219,7 @@ def mine_textbook_to_questions(
     else:
         prompt_template = _build_mine_questions_prompt(job_config)
 
-    chain = prompt_template | llm.with_structured_output(InterviewQuestionList)
+    chain = prompt_template | llm.with_structured_output(InterviewQuestionList, method="json_mode")
 
     all_questions = []
 

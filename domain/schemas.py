@@ -14,7 +14,7 @@ VALID_ACTIONS = [
 
 class InterviewQuestion(BaseModel):
     job_type: str = Field(
-        ...,
+        default="",
         description="岗位类型，如：新媒体运营、产品经理、前端开发等"
     )
     question: str = Field(
@@ -54,6 +54,8 @@ class InterviewQuestionList(BaseModel):
                 v["questions"] = v.pop("items")
             if "data" in v and "questions" not in v:
                 v["questions"] = v.pop("data")
+            if "questions" not in v and "question" in v:
+                v = {"questions": [v]}
         return v
 
 
