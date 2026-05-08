@@ -1,0 +1,6 @@
+{
+  "faiss": "13aecf067585b4187ad9bfa2ada211bbd46f0d967bf1823d2d68dd6dfdeac0af",
+  "bm25": "74b920b3add217bc5ff328331b6ee503a10c513c0e7fdefdcbfb4d5860929cf6",
+  "version": "2.0",
+  "job_type": "\u7528\u6237\u589e\u957f\u8fd0\u8425"
+}
