@@ -1,0 +1,144 @@
+openapi: "3.0.0"
+info:
+  title: AI面试教练
+  description: 专属AI面试教练，提供模拟面试训练、弱点画像、差距分析和能力报告
+  version: "1.0.0"
+
+servers:
+  - url: https://your-domain.com
+
+paths:
+  /api/interview:
+    post:
+      operationId: interviewChat
+      summary: 面试教练对话
+      description: |
+        发送用户消息或执行操作。每次用户发消息都必须调用此工具。
+        如果返回status为processing，请用task_id调用pollTask轮询结果。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+                  description: "用户唯一标识，使用 {{conversation_id}}"
+                message:
+                  type: string
+                  description: "用户消息原文"
+                  default: ""
+                action:
+                  type: string
+                  enum:
+                    - chat
+                    - select_job
+                    - quick_start
+                    - generate_report
+                    - reset
+                    - use_default_jd
+                  description: "操作类型，默认chat"
+                  default: chat
+                job_type:
+                  type: string
+                  description: "岗位类型，选择岗位时必填。可用listJobs查询"
+                file_url:
+                  type: string
+                  description: "用户上传文件的URL"
+      responses:
+        "200":
+          description: 面试教练响应
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reply:
+                    type: string
+                    description: "回复内容，必须原样展示给用户"
+                  actions:
+                    type: array
+                    description: "可用操作按钮"
+                    items:
+                      type: object
+                      properties:
+                        label:
+                          type: string
+                          description: "按钮文字"
+                        action:
+                          type: string
+                          description: "按钮对应的action值"
+                        value:
+                          type: string
+                          description: "附加参数"
+                  status:
+                    type: string
+                    description: "状态：ok/processing/waiting/error"
+                  task_id:
+                    type: string
+                    description: "processing时返回，用于轮询"
+
+  /api/interview/{task_id}:
+    get:
+      operationId: pollTask
+      summary: 轮询异步任务结果
+      description: |
+        当interviewChat返回status为processing时，用此接口轮询。
+        每隔3-5秒调用一次，直到status变为ok或error。
+        如果结果为ok，将reply原样展示给用户。
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 任务结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reply:
+                    type: string
+                  status:
+                    type: string
+                  task_id:
+                    type: string
+
+  /api/jobs:
+    get:
+      operationId: listJobs
+      summary: 获取可用岗位列表
+      description: 查询当前系统支持的所有岗位类型及显示名称
+      responses:
+        "200":
+          description: 岗位列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        job_type:
+                          type: string
+                        display_name:
+                          type: string
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - ApiKeyAuth: []

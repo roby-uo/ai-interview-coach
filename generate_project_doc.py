@@ -211,11 +211,17 @@ class DocumentationGenerator:
             "",
             "| 目录 | 说明 |",
             "|------|------|",
+            "| `api/` | API服务层（Coze插件接口、会话管理、异步任务） |",
             "| `app/` | 应用入口和配置（Chainlit UI层） |",
             "| `core/` | 核心业务逻辑（LangGraph图、节点、技能、用户画像） |",
+            "| `core/graph/` | LangGraph图定义和运行器 |",
+            "| `core/nodes/` | 图节点实现（路由、历史、报告等） |",
+            "| `core/profiler/` | 用户画像提取、差距分析、门卫分类 |",
+            "| `core/skills/` | 技能模块（苏格拉底、脚手架、判卷等） |",
             "| `core/utils/` | 工具模块（LLM工厂、通用工具函数） |",
             "| `data/` | 数据层（向量索引、处理后数据、原始数据） |",
             "| `data/jobs/{岗位}/` | 各岗位独立数据目录（raw/processed/index） |",
+            "| `deploy/` | 部署配置（Coze插件YAML、Nginx配置） |",
             "| `domain/` | 领域模型、数据结构和业务验证 |",
             "| `domain/job_configs/` | 岗位配置文件（YAML格式） |",
             "| `infrastructure/` | 基础设施（解析器、检索器、工具） |",
@@ -234,10 +240,12 @@ class DocumentationGenerator:
         grouped_files = self._group_files_by_directory(files)
         
         dir_order = [
+            ('api', 'API服务层 (api/)', 'Coze插件接口、会话管理、异步任务处理'),
             ('app', '应用层 (app/)', 'Chainlit应用入口和配置'),
             ('core', '核心层 (core/)', 'LangGraph图定义、节点实现、技能模块、用户画像'),
             ('domain', '领域层 (domain/)', '数据模型、业务实体、岗位配置'),
             ('infrastructure', '基础设施层 (infrastructure/)', '文件解析、向量检索、工具集成'),
+            ('deploy', '部署配置 (deploy/)', 'Coze插件YAML、Nginx配置'),
             ('scripts', '脚本 (scripts/)', '构建索引、数据处理、CLI管理工具'),
         ]
         
