@@ -31,5 +31,13 @@ ENV/
 .DS_Store
 
 data/jobs/
+data/题库/
+data/index/
+data/processed/
+data/raw/
 *.faiss
 *.jsonl
+docs/
+ARCHITECTURE.md
+.chainlit/translations/
+!.chainlit/translations/zh-CN.json

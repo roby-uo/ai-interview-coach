@@ -3,9 +3,9 @@
 
 用法:
     python scripts/manage.py list-jobs
-    python scripts/manage.py add-job --name "产品经理" --input "题库/产品经理.pdf" "题库/面经2.pdf"
-    python scripts/manage.py add-job --name "产品经理" --input "题库/"          (整个目录)
-    python scripts/manage.py mine --job-type "产品经理" --input "题库/产品经理.pdf" "题库/面经2.pdf"
+    python scripts/manage.py add-job --name "产品经理" --input "data/题库/产品经理.pdf" "data/题库/面经2.pdf"
+    python scripts/manage.py add-job --name "产品经理" --input "data/题库/"          (整个目录)
+    python scripts/manage.py mine --job-type "产品经理" --input "data/题库/产品经理.pdf" "data/题库/面经2.pdf"
     python scripts/manage.py build-index --job-type "产品经理"
     python scripts/manage.py rebuild --job-type "新媒体运营"
     python scripts/manage.py remove-job --job-type "产品经理"
@@ -196,10 +196,10 @@ def main():
         epilog="""
 Examples:
   python scripts/manage.py list-jobs
-  python scripts/manage.py add-job --name "产品经理" --input "题库/产品经理.pdf"
-  python scripts/manage.py add-job --name "产品经理" --input "题库/1.pdf" "题库/2.pdf" "题库/3.txt"
-  python scripts/manage.py add-job --name "产品经理" --input "题库/"
-  python scripts/manage.py mine --job-type "产品经理" --input "题库/1.pdf" "题库/2.pdf"
+  python scripts/manage.py add-job --name "产品经理" --input "data/题库/产品经理.pdf"
+  python scripts/manage.py add-job --name "产品经理" --input "data/题库/1.pdf" "data/题库/2.pdf" "data/题库/3.txt"
+  python scripts/manage.py add-job --name "产品经理" --input "data/题库/"
+  python scripts/manage.py mine --job-type "产品经理" --input "data/题库/1.pdf" "data/题库/2.pdf"
   python scripts/manage.py build-index --job-type "产品经理"
   python scripts/manage.py rebuild --job-type "新媒体运营"
   python scripts/manage.py remove-job --job-type "产品经理" --force
